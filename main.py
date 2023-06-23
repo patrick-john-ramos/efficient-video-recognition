@@ -6,6 +6,7 @@ import builtins
 
 import torch
 # import torch.distributed as dist
+from tqdm.auto import tqdm
 
 import video_dataset
 import checkpoint
@@ -138,7 +139,7 @@ def main():
 
     assert len(train_loader) == args.num_steps - resume_step
     batch_st, train_st = datetime.now(), datetime.now()
-    for i, (data, labels) in enumerate(train_loader, resume_step):
+    for i, (data, labels) in enumerate(tqdm(train_loader, initial=resume_step), resume_step):
         data, labels = data.cuda(), labels.cuda()
         data_ed = datetime.now()
 
@@ -201,7 +202,8 @@ def main():
 
 
 def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
-    tot, hit1, hit5 = 0, 0, 0
+    # tot, hit1, hit5 = 0, 0, 0
+    tot, hit1 = 0, 0
     eval_st = datetime.now()
     for data, labels in loader:
         data, labels = data.cuda(), labels.cuda()
@@ -215,17 +217,20 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
 
         tot += 1
         hit1 += (scores.topk(1)[1] == labels).sum().item()
-        hit5 += (scores.topk(5)[1] == labels).sum().item()
+        # hit5 += (scores.topk(5)[1] == labels).sum().item()
 
         if tot % 20 == 0:
             print(f'[Evaluation] num_samples: {tot}  '
                   f'ETA: {(datetime.now() - eval_st) / tot * (len(loader) - tot)}  '
                   f'cumulative_acc1: {hit1 / tot * 100.:.2f}%  '
-                  f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
+                 )
+                  # f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
 
-    sync_tensor = torch.LongTensor([tot, hit1, hit5]).cuda()
+    # sync_tensor = torch.LongTensor([tot, hit1, hit5]).cuda()
+    sync_tensor = torch.LongTensor([tot, hit1]).cuda()
     # dist.all_reduce(sync_tensor)
-    tot, hit1, hit5 = sync_tensor.cpu().tolist()
+    # tot, hit1, hit5 = sync_tensor.cpu().tolist()
+    tot, hit1 = sync_tensor.cpu().tolist()
 
     print(f'Accuracy on validation set: top1={hit1 / tot * 100:.2f}%, top5={hit5 / tot * 100:.2f}%')
 
