@@ -6,7 +6,7 @@ import builtins
 
 import torch
 # import torch.distributed as dist
-from tqdm.auto import tqdm
+from tqdm.notebook import tqdm
 
 import video_dataset
 import checkpoint
