@@ -146,7 +146,8 @@ def main():
 
         assert data.size(0) % args.batch_split == 0
         split_size = data.size(0) // args.batch_split
-        hit1, hit5, loss_value = 0, 0, 0
+        hit1, loss_value = 0, 0
+        # hit1, hit5, loss_value = 0, 0, 0
         for j in range(args.batch_split):
             data_slice = data[split_size * j: split_size * (j + 1)]
             labels_slice = labels[split_size * j: split_size * (j + 1)]
@@ -157,7 +158,7 @@ def main():
                 
             if labels.dtype == torch.long: # no mixup, can calculate accuracy
                 hit1 += (logits.topk(1, dim=1)[1] == labels_slice.view(-1, 1)).sum().item()
-                hit5 += (logits.topk(5, dim=1)[1] == labels_slice.view(-1, 1)).sum().item()
+                # hit5 += (logits.topk(5, dim=1)[1] == labels_slice.view(-1, 1)).sum().item()
             loss_value += loss.item() / args.batch_split
             
             loss_scaler.scale(loss / args.batch_split).backward()
@@ -169,10 +170,12 @@ def main():
         batch_ed = datetime.now()
 
         if i % args.print_freq == 0:
-            sync_tensor = torch.Tensor([loss_value, hit1 / data.size(0), hit5 / data.size(0)]).cuda()
+            # sync_tensor = torch.Tensor([loss_value, hit1 / data.size(0), hit5 / data.size(0)]).cuda()
+            sync_tensor = torch.Tensor([loss_value, hit1 / data.size(0)]).cuda()
             # dist.all_reduce(sync_tensor)
             # sync_tensor = sync_tensor.cpu() / dist.get_world_size()
-            loss_value, acc1, acc5 = sync_tensor.tolist()
+            # loss_value, acc1, acc5 = sync_tensor.tolist()
+            loss_value, acc1 = sync_tensor.tolist()
 
             print(
                 f'batch_time: {(batch_ed - batch_st).total_seconds():.3f}  '
@@ -180,7 +183,8 @@ def main():
                 f'ETA: {(batch_ed - train_st) / (i - resume_step + 1) * (args.num_steps - i - 1)}  |  '
                 f'lr: {optimizer.param_groups[0]["lr"]:.6f}  '
                 f'loss: {loss_value:.6f}' + (
-                    f'  acc1: {acc1 * 100:.2f}%  acc5: {acc5 * 100:.2f}%' if labels.dtype == torch.long else ''
+                    # f'  acc1: {acc1 * 100:.2f}%  acc5: {acc5 * 100:.2f}%' if labels.dtype == torch.long else ''
+                    f'  acc1: {acc1 * 100:.2f}%' if labels.dtype == torch.long else ''
                 )
             )
         
