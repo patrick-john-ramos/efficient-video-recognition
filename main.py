@@ -5,7 +5,7 @@ from datetime import datetime
 import builtins
 
 import torch
-import torch.distributed as dist
+# import torch.distributed as dist
 
 import video_dataset
 import checkpoint
@@ -91,10 +91,10 @@ def main():
 
     args = parser.parse_args()
 
-    dist.init_process_group('nccl')
-    setup_print(dist.get_rank() == 0)
-    cuda_device_id = dist.get_rank() % torch.cuda.device_count()
-    torch.cuda.set_device(cuda_device_id)
+    # dist.init_process_group('nccl')
+    # setup_print(dist.get_rank() == 0)
+    # cuda_device_id = dist.get_rank() % torch.cuda.device_count()
+    # torch.cuda.set_device(cuda_device_id)
 
     model = EVLTransformer(
         backbone_name=args.backbone,
@@ -115,9 +115,9 @@ def main():
     )
     print(model)
     model.cuda()
-    model = torch.nn.parallel.DistributedDataParallel(
-        model, device_ids=[cuda_device_id], output_device=cuda_device_id,
-    )
+    # model = torch.nn.parallel.DistributedDataParallel(
+    #     model, device_ids=[cuda_device_id], output_device=cuda_device_id,
+    # )
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     lr_sched = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.num_steps)
@@ -170,8 +170,8 @@ def main():
 
         if i % args.print_freq == 0:
             sync_tensor = torch.Tensor([loss_value, hit1 / data.size(0), hit5 / data.size(0)]).cuda()
-            dist.all_reduce(sync_tensor)
-            sync_tensor = sync_tensor.cpu() / dist.get_world_size()
+            # dist.all_reduce(sync_tensor)
+            # sync_tensor = sync_tensor.cpu() / dist.get_world_size()
             loss_value, acc1, acc5 = sync_tensor.tolist()
 
             print(
@@ -220,7 +220,7 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
                   f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
 
     sync_tensor = torch.LongTensor([tot, hit1, hit5]).cuda()
-    dist.all_reduce(sync_tensor)
+    # dist.all_reduce(sync_tensor)
     tot, hit1, hit5 = sync_tensor.cpu().tolist()
 
     print(f'Accuracy on validation set: top1={hit1 / tot * 100:.2f}%, top5={hit5 / tot * 100:.2f}%')
