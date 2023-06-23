@@ -314,6 +314,15 @@ vit_presets = {
         mlp_factor=4.0,
         ln_pre=True,
     ),
+    'ViT-B/32-lnpre': dict(
+        feature_dim=768,
+        input_size=(224, 224),
+        patch_size=(32, 32),
+        num_heads=12,
+        num_layers=12,
+        mlp_factor=4.0,
+        ln_pre=True,
+    ),
     'ViT-L/14-lnpre': dict(
         feature_dim=1024,
         input_size=(224, 224),
