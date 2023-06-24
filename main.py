@@ -215,7 +215,7 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
     # tot, hit1, hit5 = 0, 0, 0
     tot, hit1 = 0, 0
     eval_st = datetime.now()
-    pbar = tqdm(total=len(loader)
+    pbar = tqdm(total=len(loader))
     for data, labels in loader:
         data, labels = data.cuda(), labels.cuda()
         assert data.size(0) == 1
