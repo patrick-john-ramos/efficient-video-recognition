@@ -231,11 +231,11 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
         # hit5 += (scores.topk(5)[1] == labels).sum().item()
 
         if tot % 20 == 0:
-            print(f'[Evaluation] num_samples: {tot}  '
-                  f'ETA: {(datetime.now() - eval_st) / tot * (len(loader) - tot)}  '
-                  f'cumulative_acc1: {hit1 / tot * 100.:.2f}%  '
-                 )
-                  # f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
+            # print(f'[Evaluation] num_samples: {tot}  '
+            #       f'ETA: {(datetime.now() - eval_st) / tot * (len(loader) - tot)}  '
+            #       f'cumulative_acc1: {hit1 / tot * 100.:.2f}%  '
+            #      )
+            #       # f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
             pbar.update_postfix({'cumulative_acc1': hit1 / tot})
         pbar.update(1)
 
