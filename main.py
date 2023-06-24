@@ -176,6 +176,7 @@ def main():
             # dist.all_reduce(sync_tensor)
             # sync_tensor = sync_tensor.cpu() / dist.get_world_size()
             # loss_value, acc1, acc5 = sync_tensor.tolist()
+            acc1 = hit1 / data.size(0)
 
             # print(
             #     f'batch_time: {(batch_ed - batch_st).total_seconds():.3f}  '
