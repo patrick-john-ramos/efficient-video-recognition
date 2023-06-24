@@ -173,11 +173,9 @@ def main():
 
         if i % args.print_freq == 0:
             # sync_tensor = torch.Tensor([loss_value, hit1 / data.size(0), hit5 / data.size(0)]).cuda()
-            sync_tensor = torch.Tensor([loss_value, hit1 / data.size(0)]).cuda()
             # dist.all_reduce(sync_tensor)
             # sync_tensor = sync_tensor.cpu() / dist.get_world_size()
             # loss_value, acc1, acc5 = sync_tensor.tolist()
-            loss_value, acc1 = sync_tensor.tolist()
 
             # print(
             #     f'batch_time: {(batch_ed - batch_st).total_seconds():.3f}  '
@@ -240,10 +238,8 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
         pbar.update(1)
 
     # sync_tensor = torch.LongTensor([tot, hit1, hit5]).cuda()
-    sync_tensor = torch.LongTensor([tot, hit1]).cuda()
     # dist.all_reduce(sync_tensor)
     # tot, hit1, hit5 = sync_tensor.cpu().tolist()
-    tot, hit1 = sync_tensor.cpu().tolist()
 
     print(f'Accuracy on validation set: top1={hit1 / tot * 100:.2f}%, top5={hit5 / tot * 100:.2f}%')
 
