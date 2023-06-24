@@ -235,7 +235,7 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
             #       f'cumulative_acc1: {hit1 / tot * 100.:.2f}%  '
             #      )
             #       # f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
-            pbar.update_postfix({'cumulative_acc1': hit1 / tot})
+            pbar.set_postfix({'cumulative_acc1': hit1 / tot})
         pbar.update(1)
 
     # sync_tensor = torch.LongTensor([tot, hit1, hit5]).cuda()
