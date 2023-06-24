@@ -139,7 +139,8 @@ def main():
 
     assert len(train_loader) == args.num_steps - resume_step
     batch_st, train_st = datetime.now(), datetime.now()
-    for i, (data, labels) in enumerate(tqdm(train_loader, initial=resume_step), resume_step):
+    pbar = tqdm(total=args.num_steps, initial=resume_step)
+    for i, (data, labels) in enumerate(train_loader, resume_step):
         data, labels = data.cuda(), labels.cuda()
         data_ed = datetime.now()
 
@@ -178,16 +179,23 @@ def main():
             # loss_value, acc1, acc5 = sync_tensor.tolist()
             loss_value, acc1 = sync_tensor.tolist()
 
-            print(
-                f'batch_time: {(batch_ed - batch_st).total_seconds():.3f}  '
-                f'data_time: {(data_ed - batch_st).total_seconds():.3f}  '
-                f'ETA: {(batch_ed - train_st) / (i - resume_step + 1) * (args.num_steps - i - 1)}  |  '
-                f'lr: {optimizer.param_groups[0]["lr"]:.6f}  '
-                f'loss: {loss_value:.6f}' + (
-                    # f'  acc1: {acc1 * 100:.2f}%  acc5: {acc5 * 100:.2f}%' if labels.dtype == torch.long else ''
-                    f'  acc1: {acc1 * 100:.2f}%' if labels.dtype == torch.long else ''
-                )
-            )
+            # print(
+            #     f'batch_time: {(batch_ed - batch_st).total_seconds():.3f}  '
+            #     f'data_time: {(data_ed - batch_st).total_seconds():.3f}  '
+            #     f'ETA: {(batch_ed - train_st) / (i - resume_step + 1) * (args.num_steps - i - 1)}  |  '
+            #     f'lr: {optimizer.param_groups[0]["lr"]:.6f}  '
+            #     f'loss: {loss_value:.6f}' + (
+            #         # f'  acc1: {acc1 * 100:.2f}%  acc5: {acc5 * 100:.2f}%' if labels.dtype == torch.long else ''
+            #         f'  acc1: {acc1 * 100:.2f}%' if labels.dtype == torch.long else ''
+            #     )
+            # )
+            pbar.set_postfix({
+                'batch_time': (batch_ed - batch_st).total_seconds(),
+                'data_time': (data_ed - batch_st).total_seconds(),
+                'lr': optimizer.param_groups[0]["lr"],
+                'loss': loss_value,
+                'acc1': acc1
+            })
         
         if (i + 1) % args.eval_freq == 0:
             print('Start model evaluation at step', i + 1)
@@ -200,11 +208,14 @@ def main():
         
         batch_st = datetime.now()
 
+        pbar.update(1)
+
 
 def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
     # tot, hit1, hit5 = 0, 0, 0
     tot, hit1 = 0, 0
     eval_st = datetime.now()
+    pbar = tqdm(total=len(loader)
     for data, labels in loader:
         data, labels = data.cuda(), labels.cuda()
         assert data.size(0) == 1
@@ -225,6 +236,8 @@ def evaluate(model: torch.nn.Module, loader: torch.utils.data.DataLoader):
                   f'cumulative_acc1: {hit1 / tot * 100.:.2f}%  '
                  )
                   # f'cumulative_acc5: {hit5 / tot * 100.:.2f}%')
+            pbar.update_postfix({'cumulative_acc1': hit1 / tot})
+        pbar.update(1)
 
     # sync_tensor = torch.LongTensor([tot, hit1, hit5]).cuda()
     sync_tensor = torch.LongTensor([tot, hit1]).cuda()
