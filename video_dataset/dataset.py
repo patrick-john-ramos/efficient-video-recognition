@@ -113,7 +113,7 @@ class VideoDataset(torch.utils.data.Dataset):
             # )
 
             # frames = self._generate_spatial_crops(frames)
-            frames = sum([self._generate_temporal_crops(x) for x in frames], [])
+            # frames = sum([self._generate_temporal_crops(x) for x in frames], [])
             if len(frames) > 1:
                 frames = torch.stack(frames)
 
