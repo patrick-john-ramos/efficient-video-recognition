@@ -39,10 +39,11 @@ class VideoDataset(torch.utils.data.Dataset):
             self.num_temporal_views = num_temporal_views
             self.num_spatial_views = num_spatial_views
             self.tfs = transforms.Compose([
-                T.Resize(size=spatial_size-2, max_size=spatial_size), # assumes width > height
-                T.CenterCrop(spatial_size),
-                T.Normalize(mean, std)
+                transforms.Resize(size=spatial_size-2, max_size=spatial_size), # assumes width > height
+                transforms.CenterCrop(spatial_size),
+                transforms.Normalize(mean, std)
             ])
+            print(self.tfs)
 
         with open(list_path) as f:
             self.data_list = f.read().splitlines()
