@@ -96,8 +96,7 @@ class VideoDataset(torch.utils.data.Dataset):
 
             # frames = (frames - self.mean) / self.std
             # frames = frames.permute(3, 0, 1, 2) # C, T, H, W
-            frames = self.tfs(frames)
-            frames = frames.permute(1, 0, 2, 3) # C, T, H, W
+            frames = self.tfs(frames).permute(1, 0, 2, 3) # C, T, H, W
             
             # if frames.size(-2) < frames.size(-1):
             #     new_width = frames.size(-1) * self.spatial_size // frames.size(-2)
@@ -114,6 +113,7 @@ class VideoDataset(torch.utils.data.Dataset):
             # frames = sum([self._generate_temporal_crops(x) for x in frames], [])
             # if len(frames) > 1:
             #     frames = torch.stack(frames)
+            frames = self._generate_temporal_crops(frames)
 
         return frames, label
 
