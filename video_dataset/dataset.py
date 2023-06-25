@@ -91,13 +91,15 @@ class VideoDataset(torch.utils.data.Dataset):
             
         else:
             frames = [x.to_rgb().to_ndarray() for x in frames]
-            frames = torch.as_tensor(np.stack(frames)).permute(0, 3, 1, 2)
+            frames = torch.as_tensor(np.stack(frames)).permute(0, 3, 1, 2) # T, C, H, W
             frames = frames.float() / 255.
+            print(frames.shape)
 
             # frames = (frames - self.mean) / self.std
             # frames = frames.permute(3, 0, 1, 2) # C, T, H, W
             frames = self.tfs(frames)
             frames = frames.permute(1, 0, 2, 3) # C, T, H, W
+            print(frames.shape)
             
             # if frames.size(-2) < frames.size(-1):
             #     new_width = frames.size(-1) * self.spatial_size // frames.size(-2)
