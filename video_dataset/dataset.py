@@ -91,8 +91,8 @@ class VideoDataset(torch.utils.data.Dataset):
             
         else:
             frames = [x.to_rgb().to_ndarray() for x in frames]
-            frames = torch.as_tensor(np.stack(frames))
-            # frames = frames.float() / 255.
+            frames = torch.as_tensor(np.stack(frames)).permute(0, 3, 1, 2)
+            frames = frames.float() / 255.
 
             # frames = (frames - self.mean) / self.std
             # frames = frames.permute(3, 0, 1, 2) # C, T, H, W
