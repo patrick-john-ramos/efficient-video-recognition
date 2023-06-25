@@ -54,6 +54,8 @@ def setup_arg_parser(parser: argparse.ArgumentParser):
     parser.add_argument('--no_mirror', action='store_false', dest='mirror',
                         help='disable mirror for training (frequently used for the something-something dataset)')
     parser.set_defaults(mirror=True)
+    parser.add_argument('--random_sample', action='store_true',
+                       help='enable random sapling in video dataset object')
                         
 
 def _parse_mean_and_std(args: argparse.Namespace) -> Dict[str, torch.Tensor]:
@@ -84,7 +86,7 @@ def create_train_dataset(args: argparse.Namespace) -> torch.utils.data.Dataset:
     return VideoDataset(
         list_path=args.train_list_path,
         data_root=args.train_data_root or args.data_root,
-        num_spatial_views=1, num_temporal_views=1, random_sample=True,
+        num_spatial_views=1, num_temporal_views=1, random_sample=args.random_sample,
         auto_augment=args.auto_augment,
         interpolation=args.interpolation,
         mirror=args.mirror,
