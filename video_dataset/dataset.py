@@ -38,6 +38,11 @@ class VideoDataset(torch.utils.data.Dataset):
             self.random_sample = False
             self.num_temporal_views = num_temporal_views
             self.num_spatial_views = num_spatial_views
+            self.tfs = transforms.Compose([
+                T.Resize(size=spatial_size-2, max_size=spatial_size), # assumes width > height
+                T.CenterCrop(spatial_size),
+                T.Normalize(mean, std)
+            ])
 
         with open(list_path) as f:
             self.data_list = f.read().splitlines()
@@ -86,23 +91,25 @@ class VideoDataset(torch.utils.data.Dataset):
         else:
             frames = [x.to_rgb().to_ndarray() for x in frames]
             frames = torch.as_tensor(np.stack(frames))
-            frames = frames.float() / 255.
+            # frames = frames.float() / 255.
 
-            frames = (frames - self.mean) / self.std
-            frames = frames.permute(3, 0, 1, 2) # C, T, H, W
+            # frames = (frames - self.mean) / self.std
+            # frames = frames.permute(3, 0, 1, 2) # C, T, H, W
+            frames = self.tfs(frames)
+            frames = frames.permute(1, 0, 2, 3) # C, T, H, W
             
-            if frames.size(-2) < frames.size(-1):
-                new_width = frames.size(-1) * self.spatial_size // frames.size(-2)
-                new_height = self.spatial_size
-            else:
-                new_height = frames.size(-2) * self.spatial_size // frames.size(-1)
-                new_width = self.spatial_size
-            frames = torch.nn.functional.interpolate(
-                frames, size=(new_height, new_width),
-                mode='bilinear', align_corners=False,
-            )
+            # if frames.size(-2) < frames.size(-1):
+            #     new_width = frames.size(-1) * self.spatial_size // frames.size(-2)
+            #     new_height = self.spatial_size
+            # else:
+            #     new_height = frames.size(-2) * self.spatial_size // frames.size(-1)
+            #     new_width = self.spatial_size
+            # frames = torch.nn.functional.interpolate(
+            #     frames, size=(new_height, new_width),
+            #     mode='bilinear', align_corners=False,
+            # )
 
-            frames = self._generate_spatial_crops(frames)
+            # frames = self._generate_spatial_crops(frames)
             frames = sum([self._generate_temporal_crops(x) for x in frames], [])
             if len(frames) > 1:
                 frames = torch.stack(frames)
