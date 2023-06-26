@@ -83,6 +83,7 @@ def load_weights_custom_clip(load_path):
             raise Exception()
 
     new_state_dict = {rename(k): v for k, v in state_dict.items() if k.startswith('student.vision_model') and 'position_ids' not in k}
+    new_state_dict['patch_embed.proj.weight'] = new_state_dict['patch_embed.proj.weight'].flatten(1)
     return new_state_dict
 
 
