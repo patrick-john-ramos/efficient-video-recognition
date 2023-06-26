@@ -313,6 +313,7 @@ vit_presets = {
         num_layers=12,
         mlp_factor=4.0,
         ln_pre=False,
+        ln_post=True
     ),
     'ViT-B/16-lnpre': dict(
         feature_dim=768,
