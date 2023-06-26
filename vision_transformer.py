@@ -306,7 +306,7 @@ def model_to_fp16(model: VisionTransformer2D):
 
 vit_presets = {
     'ViT-S/16': dict(
-        feature_dim=284,
+        feature_dim=384,
         input_size=(224, 224),
         patch_size=(16, 16),
         num_heads=6,
