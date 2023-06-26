@@ -240,6 +240,7 @@ class VisionTransformer2D(nn.Module):
         act: nn.Module = QuickGELU,
         return_all_features: bool = False,
         ln_pre: bool = False,
+        ln_post: bool = False
     ):
         super().__init__()
 
@@ -262,6 +263,11 @@ class VisionTransformer2D(nn.Module):
             self.ln_pre = LayerNorm(feature_dim)
         else:
             self.ln_pre = nn.Identity()
+
+        if ln_post:
+            self.ln_post = LayerNorm(feature_dim)
+        else:
+            self.ln_post = nn.Identity()
 
         self._initialize_weights()
 
@@ -291,6 +297,7 @@ class VisionTransformer2D(nn.Module):
         else:
             for blk in self.blocks:
                 x = blk(x)
+            x = self.ln_post(x)
             return x
 
 
