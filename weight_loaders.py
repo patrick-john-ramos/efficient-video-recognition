@@ -4,6 +4,7 @@ import os, sys
 from typing import Dict
 
 import torch
+from safetensors.torch import load_file
 
 __all__ = ['weight_loader_fn_dict']
 
@@ -57,7 +58,35 @@ def load_weights_clip(load_path: str) -> Dict[str, torch.Tensor]:
 
     return dst_state_dict
 
+def load_weights_custom_clip(load_path):
+    state_dict = load_file(load_path)
+    
+    def rename(name):
+        name = name.removeprefix('student.vision_model.')
+        if 'class_embedding' in name:
+            return 'cls_token'
+        elif 'patch_embedding' in name:
+            return name.replace('embeddings.patch_embedding', 'patch_embed.proj')
+        elif 'position_embedding' in name:
+            return 'pos_embed'
+        elif 'encoder' in name:
+            return (
+                name
+                .replace('encoder.layers', 'blocks')
+                .replace('layer_norm', 'norm')
+                .replace('self_attn', 'attn')
+            )
+        elif 'post_layernorm' in name:
+            return name.replace('post_layernorm', 'ln_post')
+        else:
+            print(name)
+            raise Exception()
+
+    new_state_dict = {rename(k): v for k, v in state_dict.items() if k.startswith('student.vision_model') and 'position_ids' not in k}
+    return new_state_dict
+
 
 weight_loader_fn_dict = {
     'clip': load_weights_clip,
+    'custom_clip': load_weights_custom_clip
 }
